@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Админка — Sezim Family Restobar</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='32' fill='%232f3a1c'/%3E%3Ctext x='32' y='44' font-size='38' text-anchor='middle' fill='%23e8d9b5' font-family='Georgia,serif' font-style='italic'%3ES%3C/text%3E%3C/svg%3E">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+:root{--bg:#121510;--s1:#1a1f15;--s2:#242a1d;--line:#323a28;--text:#f4efe4;--muted:#aab09c;--acc:#d9c08a;--ok:#3ad07f;--red:#ff6b6b;--wa:#1fae5b}
+body{background:var(--bg);color:var(--text);font:400 15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh}
+button,input,select,textarea{font:inherit;color:inherit}
+button{background:none;border:0;cursor:pointer}
+a{color:inherit}
+.wrap{max-width:900px;margin:0 auto;padding:0 14px}
+input,select,textarea{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:11px;font-size:16px;padding:10px 12px;min-width:0}
+textarea{resize:vertical;line-height:1.45;font-size:14.5px}
+input:focus,select:focus,textarea:focus{outline:0;border-color:var(--acc)}
+.fld{display:grid;gap:5px;font-size:13px;color:var(--muted);margin-bottom:10px}
+.muted{color:var(--muted);font-size:13px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row>.fld{flex:1;min-width:120px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:42px;padding:0 15px;border-radius:12px;font-weight:700;font-size:14px;background:var(--s2);border:1px solid var(--line)}
+.btn.p{background:var(--acc);color:#16181d;border-color:var(--acc)}
+.btn.s{height:34px;padding:0 11px;font-size:13px;border-radius:10px}
+.btn.g{background:var(--wa);border-color:var(--wa);color:#fff}
+.btn.r{color:var(--red)}
+.gate{max-width:380px;margin:12vh auto 0;padding:0 18px;text-align:center}
+.gate h1{font-size:24px;margin:14px 0 6px}
+.gate p{color:var(--muted);margin-bottom:18px}
+.gate .fld{text-align:left}
+.gate .btn{width:100%}
+.mark{width:54px;height:54px;border-radius:15px;background:#1f2229;margin:0 auto;position:relative;overflow:hidden;border:1px solid #3a3f4a}
+.mark:before,.mark:after{content:"";position:absolute;background:#fff3d6;box-shadow:0 0 8px 2px rgba(255,236,190,.6);border-radius:2px}
+.mark:before{left:12px;right:12px;top:16px;height:3px}.mark:after{left:12px;top:16px;bottom:12px;width:3px}
+.bar{position:sticky;top:0;z-index:10;background:rgba(14,15,18,.94);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.bar-in{display:flex;align-items:center;gap:8px;height:56px}
+.bar-in b{margin-right:auto;font-size:17px}
+.sv{font-size:12.5px;color:var(--muted)}.sv.ok{color:var(--ok)}.sv.err{color:var(--red)}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding:0 14px 10px;max-width:900px;margin:0 auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{flex:none;height:36px;padding:0 13px;border-radius:99px;background:var(--s1);border:1px solid var(--line);font-size:14px;position:relative}
+.tabs button[aria-selected=true]{background:var(--text);color:#16181d;font-weight:700}
+.dot{position:absolute;top:-3px;right:-3px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--red);color:#fff;font-size:11px;display:grid;place-items:center}
+h2.t{font-size:21px;margin:18px 0 12px}
+.card{background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+h3.c{font-size:16px;margin-bottom:10px}
+.note{background:rgba(58,208,127,.1);border:1px solid rgba(58,208,127,.35);color:#bff0d2;border-radius:12px;padding:10px 12px;font-size:13.5px;margin-bottom:12px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.chips button{height:32px;padding:0 12px;border-radius:99px;background:var(--s1);border:1px solid var(--line);font-size:13px}
+.chips button[aria-pressed=true]{background:var(--acc);color:#16181d;border-color:var(--acc);font-weight:700}
+.ord{background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px}
+.ord.new{border-color:rgba(255,217,138,.6)}
+.oh{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.oh b{font-size:16px}
+.bdg{font-size:11.5px;font-weight:700;padding:3px 8px;border-radius:99px;background:var(--s2)}
+.bdg.calc{background:rgba(255,217,138,.15);color:var(--acc)}.bdg.zamer{background:rgba(58,208,127,.15);color:var(--ok)}
+.oh time{margin-left:auto;color:var(--muted);font-size:12.5px}
+.ord ul{list-style:none;margin:8px 0;font-size:14px;display:grid;gap:3px}
+.ord li span{color:var(--muted)}
+.st{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.st button{height:32px;padding:0 10px;border-radius:9px;background:var(--s2);font-size:12.5px}
+.st button[aria-pressed=true]{background:var(--text);color:#16181d;font-weight:700}
+.it{display:grid;gap:8px;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:8px}
+.it .row input{flex:1}
+.sw{display:flex;align-items:center;gap:10px;margin-bottom:10px;cursor:pointer;font-size:14.5px}
+.sw input{width:20px;height:20px;accent-color:var(--acc)}
+.ph{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(min-width:640px){.ph{grid-template-columns:repeat(3,1fr)}}
+.phc{background:var(--bg);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.phc.hero{border-color:var(--acc)}
+.phc img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block}
+.phc .b{padding:8px;display:grid;gap:6px}
+.phc .b input{font-size:13px;padding:7px 9px}
+.phc .row{gap:4px}
+.phc .row button{flex:1;height:30px;border-radius:8px;background:var(--s2);font-size:13px}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%) translateY(120px);background:var(--text);color:#16181d;font-weight:700;padding:11px 16px;border-radius:12px;transition:transform .25s;z-index:30;max-width:90vw;text-align:center}
+.toast.on{transform:translateX(-50%)}
+.empty{color:var(--muted);text-align:center;padding:24px 0}
+</style>
+</head>
+<body>
+
+<div id="gate" class="gate" hidden>
+  <div class="mark"></div>
+  <h1>Админка Sezim</h1>
+  <p>Введите пароль администратора.</p>
+  <label class="fld">Пароль <span class="muted">вводите английскими буквами</span><input id="gPass" type="password" autocomplete="current-password" autocapitalize="off" autocorrect="off" spellcheck="false"></label>
+  <button class="btn p" id="gateBtn" type="button">Войти</button>
+  <p style="margin-top:16px"><a href="index.html">← вернуться на сайт</a></p>
+</div>
+
+<div id="app" hidden>
+  <header class="bar">
+    <div class="wrap bar-in"><b>Админка</b><span class="sv" id="sv"></span><a class="btn s" href="index.html" target="_blank" rel="noopener">Сайт ↗</a><button class="btn s" id="exit">Выйти</button></div>
+    <nav class="tabs" id="tabs">
+      <button data-tab="orders" aria-selected="true">Брони<span class="dot" id="dot" hidden></span></button>
+      <button data-tab="menu" aria-selected="false">Меню</button>
+      <button data-tab="works" aria-selected="false">Фото</button>
+      <button data-tab="texts" aria-selected="false">Тексты</button>
+      <button data-tab="about" aria-selected="false">О нас</button>
+      <button data-tab="settings" aria-selected="false">Настройки</button>
+      <button data-tab="admin" aria-selected="false">Админка</button>
+    </nav>
+  </header>
+  <main class="wrap" id="view"></main>
+</div>
+<input type="file" id="files" accept="image/*" multiple hidden>
+<div class="toast" id="toast" role="status"></div>
+
+<script src="js/store.js?v=1"></script>
+<script>
+(function(){
+'use strict';
+var $=function(s){return document.querySelector(s);};
+var esc=function(t){return String(t==null?'':t).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});};
+var fmt=function(n){return String(Math.round(n||0)).replace(/\B(?=(\d{3})+(?!\d))/g,' ')+' ₸';};
+function toast(t){var el=$('#toast');el.textContent=t;el.classList.add('on');clearTimeout(el._t);el._t=setTimeout(function(){el.classList.remove('on');},2600);}
+function getPath(o,p){return p.split('.').reduce(function(a,k){return a==null?a:a[k];},o);}
+function setPath(o,p,v){var a=p.split('.');for(var i=0;i<a.length-1;i++)o=o[a[i]];o[a[a.length-1]]=v;}
+var D=null, tab='orders', orders=[], oSt='all', timer=null, seen=JSON.parse(localStorage.getItem('sezim_seen')||'[]');
+
+/* вход */
+function gate(){ $('#app').hidden=true; $('#gate').hidden=false; $('#gPass').focus(); }
+function login(){
+  var p=$('#gPass').value.trim(); if(!p) return toast('Введите пароль');
+  $('#gateBtn').disabled=true;
+  Store.login(p).then(boot).catch(function(e){toast(e.status===401?'Неверный пароль. Проверьте английскую раскладку':'Нет связи: '+e.message);}).then(function(){$('#gateBtn').disabled=false;});
+}
+$('#gateBtn').onclick=login;
+$('#gPass').addEventListener('keydown',function(e){if(e.key==='Enter')login();});
+$('#exit').onclick=function(){Store.logout();location.reload();};
+function boot(){
+  $('#gate').hidden=true; $('#app').hidden=false;
+  Store.load(true).then(function(d){D=d;render();}).catch(function(e){toast('Не загрузилось: '+e.message);});
+}
+if(Store.authed()) boot(); else gate();
+
+/* сохранение */
+var saveT=null;
+function sv(s){var el=$('#sv');el.className='sv '+s;el.textContent=s==='ok'?'✓ сохранено':s==='err'?'⚠ не сохранено':'сохраняю…';}
+function touch(){ sv('busy'); clearTimeout(saveT); saveT=setTimeout(function(){ Store.save(D).then(function(){sv('ok');}).catch(function(e){sv('err');toast('Не сохранилось: '+e.message);}); },600); }
+
+/* вкладки */
+$('#tabs').addEventListener('click',function(e){var b=e.target.closest('[data-tab]');if(b)go(b.dataset.tab);});
+function go(t){tab=t;[].forEach.call($('#tabs').children,function(x){x.setAttribute('aria-selected',x.dataset.tab===t);});render();window.scrollTo(0,0);}
+function render(){
+  clearInterval(timer); timer=null;
+  ({orders:vOrders,menu:vMenu,works:vWorks,texts:vTexts,about:vAbout,settings:vSettings,admin:vAdmin})[tab]();
+}
+function F(label,path,o){o=o||{};var v=getPath(D,path);if(o.list)v=(v||[]).join(o.sep||', ');
+  return '<label class="fld">'+label+(o.area?'<textarea data-b="'+path+'"'+(o.list?' data-list="'+(o.sep||',')+'"':'')+' rows="'+(o.rows||4)+'" placeholder="'+esc(o.ph||'')+'">'+esc(v==null?'':v)+'</textarea>':'<input data-b="'+path+'"'+(o.list?' data-list=","':'')+(o.num?' data-num="1" inputmode="decimal"':'')+' value="'+esc(v==null?'':v)+'" placeholder="'+esc(o.ph||'')+'">')+(o.hint?'<span class="muted">'+o.hint+'</span>':'')+'</label>';}
+function SW(label,path){return '<label class="sw"><input type="checkbox" data-b="'+path+'"'+(getPath(D,path)?' checked':'')+'>'+label+'</label>';}
+
+/* ===== БРОНИ ===== */
+var STS=[['new','Новая'],['ok','Подтверждена'],['done','Пришли'],['cancel','Отмена']];
+function vOrders(){
+  $('#view').innerHTML='<h2 class="t">Брони</h2><div class="note">Заявки на бронь с сайта приходят сюда (со звуком) и одновременно гость пишет вам в WhatsApp.</div>'+
+    '<div class="chips" id="oSt"></div><div id="olist" class="empty">Загружаю…</div>';
+  loadOrders(); timer=setInterval(function(){loadOrders(true);},20000);
+}
+function loadOrders(quiet){
+  Store.listOrders(300).then(function(l){
+    var fresh=l.filter(function(o){return o.status==='new'&&seen.indexOf(o.id)<0;});
+    if(quiet&&fresh.length){toast('Новая бронь!');try{var c=new (window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator();o.frequency.value=880;o.connect(c.destination);o.start();o.stop(c.currentTime+.25);}catch(e){}}
+    orders=l; seen=l.map(function(o){return o.id;}); localStorage.setItem('sezim_seen',JSON.stringify(seen));
+    paintOrders();
+  }).catch(function(e){$('#olist').textContent='Не загрузилось: '+e.message;});
+}
+function paintOrders(){
+  var n=orders.filter(function(o){return o.status==='new';}).length; $('#dot').hidden=!n; $('#dot').textContent=n;
+  $('#oSt').innerHTML=[['all','Все']].concat(STS).map(function(s){var c=s[0]==='all'?orders.length:orders.filter(function(o){return o.status===s[0];}).length;return '<button data-ost="'+s[0]+'" aria-pressed="'+(oSt===s[0])+'">'+s[1]+' '+c+'</button>';}).join('');
+  var l=orders.filter(function(o){return oSt==='all'||o.status===oSt;});
+  $('#olist').className=l.length?'':'empty';
+  $('#olist').innerHTML=l.length?l.map(orderHTML).join(''):'Броней пока нет.';
+}
+function dnice(v){if(!v)return '';var p=String(v).split('-');var m=['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'];return (+p[2])+' '+m[+p[1]-1];}
+function orderHTML(o){
+  var d=new Date(o.created_at), ph=String(o.phone||'').replace(/\D/g,'');
+  return '<div class="ord'+(o.status==='new'?' new':'')+'"><div class="oh"><span class="bdg calc">'+esc(dnice(o.date))+(o.time?' · '+esc(o.time):'')+'</span><b>'+esc(o.name||'Без имени')+'</b><time>создана '+d.toLocaleDateString('ru-RU',{day:'numeric',month:'short'})+', '+d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})+'</time></div>'+
+    '<ul><li><span>Телефон:</span> '+esc(o.phone||'—')+'</li><li><span>Гостей:</span> <b>'+esc(o.guests||'—')+'</b>'+(o.kids?' · 🧸 с детьми, ближе к игровой':'')+'</li>'+(o.comment?'<li><span>Пожелания:</span> '+esc(o.comment)+'</li>':'')+'</ul>'+
+    '<div class="row">'+(ph?'<a class="btn s" href="tel:+'+ph+'">📞 Позвонить</a><a class="btn s g" href="https://wa.me/'+ph+'" target="_blank" rel="noopener">WhatsApp</a>':'')+'</div>'+
+    '<div class="st">'+STS.map(function(s){return '<button data-ord="'+o.id+'" data-s="'+s[0]+'" aria-pressed="'+(o.status===s[0])+'">'+s[1]+'</button>';}).join('')+'</div></div>';
+}
+
+/* ===== МЕНЮ ===== */
+var mOpen='';
+function vMenu(){
+  $('#view').innerHTML='<h2 class="t">Меню</h2><p class="muted" style="margin-bottom:12px">Нажмите на раздел, чтобы изменить блюда и цены. Изменения сразу видны на сайте.</p>'+
+    D.menu.map(function(c,ci){
+      var open=mOpen===c.id;
+      return '<div class="card"><div class="row"><button class="btn s" data-mopen="'+esc(c.id)+'" style="flex:1;justify-content:flex-start">'+(open?'▾ ':'▸ ')+esc(c.name)+' <span class="muted">· '+(c.group==='bar'?'Бар':'Кухня')+' · '+c.items.length+'</span></button>'+
+        '<button class="btn s" data-cmv="'+ci+'|-1" aria-label="Выше">↑</button><button class="btn s" data-cmv="'+ci+'|1" aria-label="Ниже">↓</button></div>'+
+        (open?'<div style="margin-top:12px"><div class="row"><label class="fld" style="flex:2">Название раздела<input data-b="menu.'+ci+'.name" value="'+esc(c.name)+'"></label><label class="fld" style="flex:1">Где<select data-b="menu.'+ci+'.group"><option value="kitchen"'+(c.group!=='bar'?' selected':'')+'>Кухня</option><option value="bar"'+(c.group==='bar'?' selected':'')+'>Бар</option></select></label></div>'+
+          '<label class="fld">Подпись раздела<input data-b="menu.'+ci+'.note" value="'+esc(c.note||'')+'" placeholder="Например: цена за 50 мл"></label>'+
+          '<label class="sw"><input type="checkbox" data-b="menu.'+ci+'.on"'+(c.on?' checked':'')+'>Показывать раздел на сайте</label>'+
+          c.items.map(function(it,ii){return '<div class="it"><div class="row"><input data-b="menu.'+ci+'.items.'+ii+'.name" value="'+esc(it.name)+'" placeholder="Название"><input data-b="menu.'+ci+'.items.'+ii+'.price" data-num="1" inputmode="numeric" value="'+(it.price||'')+'" placeholder="₸" style="max-width:100px"></div>'+
+            '<input data-b="menu.'+ci+'.items.'+ii+'.sub" value="'+esc(it.sub||'')+'" placeholder="Вес, состав, описание (необязательно)">'+
+            '<div class="row"><label class="sw" style="margin:0"><input type="checkbox" data-b="menu.'+ci+'.items.'+ii+'.on"'+(it.on?' checked':'')+'>В наличии</label><button class="btn s" data-imv="'+ci+'|'+ii+'|-1" style="margin-left:auto">↑</button><button class="btn s" data-imv="'+ci+'|'+ii+'|1">↓</button><button class="btn s r" data-idel="'+ci+'|'+ii+'">Удалить</button></div></div>';}).join('')+
+          '<div class="row"><button class="btn" data-iadd="'+ci+'">+ Блюдо</button><button class="btn r" data-cdel="'+ci+'" style="margin-left:auto">Удалить раздел</button></div></div>':'')+'</div>';
+    }).join('')+'<button class="btn p" id="cadd">+ Новый раздел</button>';
+}
+
+/* ===== ФОТО ===== */
+function vWorks(){
+  var w=D.gallery;
+  $('#view').innerHTML='<h2 class="t">Фото</h2>'+
+    '<div class="card"><div class="row"><button class="btn p" id="upl">📷 Добавить фото</button><span class="muted" id="uplst">Можно выбрать сразу несколько. Фото сжимаются автоматически.</span></div></div>'+
+    (w.length?'<div class="ph">'+w.map(function(x,i){
+      var hero=String(D.hero.img)===String(x.img);
+      return '<div class="phc'+(hero?' hero':'')+'"><img src="'+esc(Store.img(x.img))+'" alt="" loading="lazy"><div class="b">'+
+        '<input data-b="gallery.'+i+'.cap" value="'+esc(x.cap||'')+'" placeholder="Подпись (необязательно)">'+
+        '<div class="row"><button data-mv="'+i+'|-1" aria-label="Левее">←</button><button data-mv="'+i+'|1" aria-label="Правее">→</button><button data-hero="'+i+'" title="Фото на первый экран">'+(hero?'★':'☆')+'</button><button data-wdel="'+i+'" aria-label="Удалить" style="color:var(--red)">🗑</button></div></div></div>';
+    }).join('')+'</div><p class="muted" style="margin-top:10px">★ — фото на первом экране сайта. Стрелки меняют порядок.</p>':'<p class="empty">Фото пока нет.</p>');
+}
+function compress(file){
+  return new Promise(function(res,rej){
+    var img=new Image(), u=URL.createObjectURL(file);
+    img.onload=function(){var s=Math.min(1,1280/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(u);c.toBlob(function(b){b?res(b):rej(new Error('не удалось сжать'));},'image/jpeg',0.82);};
+    img.onerror=function(){rej(new Error('не картинка'));}; img.src=u;
+  });
+}
+$('#files').onchange=function(){
+  var fs=[].slice.call(this.files||[]); if(!fs.length)return; var done=0;
+  (function next(){
+    if(!fs.length){toast('Добавлено фото: '+done);touch();return vWorks();}
+    var f=fs.shift(); var st=$('#uplst'); if(st)st.textContent='Загружаю… осталось '+(fs.length+1);
+    compress(f).then(Store.upload).then(function(id){D.gallery.unshift({img:id,cap:''});done++;}).catch(function(e){toast('Фото не загрузилось: '+e.message);}).then(next);
+  })();
+};
+
+/* ===== ТЕКСТЫ ===== */
+function blocks(arr,keys){return arr.map(function(x){return keys.map(function(k){return x[k]||'';}).join(' | ');}).join('\n');}
+function vTexts(){
+  $('#view').innerHTML='<h2 class="t">Тексты сайта</h2>'+
+    '<div class="card"><h3 class="c">Первый экран</h3>'+F('Заголовок','hero.title')+F('Текст','hero.text',{area:1,rows:3})+
+      '<label class="fld">Плюсы — каждый с новой строки<textarea data-lines="perks" rows="5">'+esc(D.perks.join('\n'))+'</textarea></label></div>'+
+    '<div class="card"><h3 class="c">Блоки «Завтраки, бизнес-ланч, детская, бар»</h3>'+D.features.map(function(f,i){return '<div class="it"><div class="row"><input data-b="features.'+i+'.title" value="'+esc(f.title)+'" placeholder="Заголовок"><input data-b="features.'+i+'.badge" value="'+esc(f.badge||'')+'" placeholder="Метка, например 3 500 ₸" style="max-width:150px"></div><textarea data-b="features.'+i+'.text" rows="2">'+esc(f.text)+'</textarea></div>';}).join('')+'</div>'+
+    '<div class="card"><h3 class="c">Детская игровая</h3>'+F('Заголовок','kids.title')+F('Текст','kids.text',{area:1,rows:3})+
+      '<label class="fld">Правила — каждое с новой строки<textarea data-lines="kids.rules" rows="5">'+esc(D.kids.rules.join('\n'))+'</textarea></label></div>'+
+    '<div class="card"><h3 class="c">Отзывы</h3><label class="fld">Каждый с новой строки: имя | дата | текст<textarea data-blocks="reviews" data-keys="name,date,text" rows="8">'+esc(blocks(D.reviews,['name','date','text']))+'</textarea></label></div>'+
+    '<div class="card"><h3 class="c">Бронь</h3>'+SW('Показывать форму брони на сайте','booking.on')+F('Подпись под заголовком','booking.note')+'</div>';
+}
+
+/* ===== О НАС ===== */
+function vAbout(){
+  $('#view').innerHTML='<h2 class="t">О нас</h2><div class="card">'+F('Заголовок','about.title',{ph:'О нас'})+F('Текст','about.text',{area:1,rows:7})+
+    F('Способы оплаты (через запятую)','settings.pay',{list:1})+'<p class="muted">Адрес, часы и ссылки — во вкладке «Настройки».</p></div>';
+}
+
+/* ===== НАСТРОЙКИ ===== */
+function vSettings(){
+  $('#view').innerHTML='<h2 class="t">Настройки</h2>'+
+    '<div class="card"><h3 class="c">Заведение</h3>'+F('Название','settings.name')+F('Город','settings.city')+F('Адрес','settings.address')+F('Вход','settings.entrance')+
+      F('Объявление — полоса наверху сайта','settings.announce',{ph:'Сегодня живая музыка с 19:00!',hint:'Пустое поле — полоса не показывается.'})+F('Строка про обслуживание в меню','settings.service')+'</div>'+
+    '<div class="card"><h3 class="c">Часы работы</h3>'+F('Как писать на сайте','settings.hours')+'<div class="row">'+F('Открытие (ЧЧ:ММ)','settings.open')+F('Закрытие (ЧЧ:ММ)','settings.close')+'</div><p class="muted">По этим часам сайт показывает «Открыто / Закрыто» и время для брони.</p></div>'+
+    '<div class="card"><h3 class="c">Связь</h3>'+F('Номер WhatsApp для брони (только цифры)','settings.wa',{ph:'77476965872'})+F('Телефон, как показывать','settings.phone')+F('Instagram','settings.instagram')+F('2ГИС','settings.gis')+
+      '<div class="row">'+F('Рейтинг','settings.rating')+F('Оценок','settings.ratingCount')+'</div></div>';
+}
+
+/* ===== АДМИНКА ===== */
+function vAdmin(){
+  $('#view').innerHTML='<h2 class="t">Админка</h2><div class="note">✅ Сайт подключён к серверу: всё, что меняете здесь, сразу видно на сайте, заявки приходят сюда с любого устройства.</div>'+
+    '<div class="card"><h3 class="c">🔑 Пароль</h3><p class="muted" style="margin-bottom:10px">Общий для всех устройств. Английские буквы и цифры, минимум 6 символов.</p>'+
+      '<label class="fld">Новый пароль<input id="p1" type="password" autocomplete="new-password" autocapitalize="off" spellcheck="false"></label>'+
+      '<label class="fld">Ещё раз<input id="p2" type="password" autocomplete="new-password" autocapitalize="off" spellcheck="false"></label><button class="btn" id="savePass">Сменить пароль</button></div>'+
+    '<div class="card"><h3 class="c">📄 Данные из файла</h3><p class="muted" style="margin-bottom:10px">Вернёт меню, тексты и фото к версии из файла data/site.json. Нужно, только если сайт обновляли через GitHub.</p><button class="btn r" id="reset">Взять из файла</button></div>'+
+    '<div class="card"><h3 class="c">🚪 Выход</h3><p class="muted" style="margin-bottom:10px">Вход держится 12 часов.</p><button class="btn" id="exit2">Выйти</button></div>';
+}
+
+/* ===== события ===== */
+document.addEventListener('input',function(e){
+  var el=e.target;
+  if(el.dataset.b){var v;if(el.type==='checkbox')v=el.checked;else if(el.dataset.num)v=+String(el.value).replace(',','.').replace(/\s/g,'')||0;else if(el.dataset.list)v=el.value.split(el.dataset.list==='\n'?/\n/:/,/).map(function(x){return x.trim();}).filter(Boolean);else v=el.value;setPath(D,el.dataset.b,v);touch();}
+  else if(el.dataset.lines){setPath(D,el.dataset.lines,el.value.split('\n').map(function(x){return x.trim();}).filter(Boolean));touch();}
+  else if(el.dataset.blocks){var ks=el.dataset.keys.split(',');D[el.dataset.blocks]=el.value.split('\n').filter(function(x){return x.trim();}).map(function(line){var p=line.split('|').map(function(x){return x.trim();}),o={};ks.forEach(function(k,i){o[k]=i===ks.length-1?p.slice(i).join(' | '):(p[i]||'');});return o;});touch();}
+});
+document.addEventListener('change',function(e){var el=e.target;if(el.type==='checkbox'&&el.dataset.b){setPath(D,el.dataset.b,el.checked);touch();}if(el.tagName==='SELECT'&&el.dataset.b){setPath(D,el.dataset.b,el.value);touch();}});
+document.addEventListener('click',function(e){
+  var t=e.target.closest('button'); if(!t)return;
+  if(t.dataset.ost){oSt=t.dataset.ost;return paintOrders();}
+  if(t.dataset.ord){var id=t.dataset.ord,s=t.dataset.s;Store.setStatus(id,s).then(function(){orders.forEach(function(o){if(String(o.id)===id)o.status=s;});paintOrders();}).catch(function(err){toast('Не вышло: '+err.message);});return;}
+  if(t.dataset.mopen){mOpen=mOpen===t.dataset.mopen?'':t.dataset.mopen;return vMenu();}
+  if(t.dataset.cmv){var q=t.dataset.cmv.split('|'),i1=+q[0],j1=i1+(+q[1]);if(j1<0||j1>=D.menu.length)return;var y=D.menu[i1];D.menu[i1]=D.menu[j1];D.menu[j1]=y;touch();return vMenu();}
+  if(t.dataset.imv){var q2=t.dataset.imv.split('|'),c2=D.menu[+q2[0]].items,i2=+q2[1],j2=i2+(+q2[2]);if(j2<0||j2>=c2.length)return;var y2=c2[i2];c2[i2]=c2[j2];c2[j2]=y2;touch();return vMenu();}
+  if(t.dataset.idel){var q3=t.dataset.idel.split('|');if(!confirm('Удалить блюдо?'))return;D.menu[+q3[0]].items.splice(+q3[1],1);touch();return vMenu();}
+  if(t.dataset.iadd){D.menu[+t.dataset.iadd].items.push({name:'Новое блюдо',price:0,sub:'',on:true});touch();return vMenu();}
+  if(t.dataset.cdel){var cc=D.menu[+t.dataset.cdel];if(!confirm('Удалить раздел «'+cc.name+'» вместе с блюдами?'))return;D.menu.splice(+t.dataset.cdel,1);touch();return vMenu();}
+  if(t.id==='cadd'){var id='c'+Date.now().toString(36);D.menu.push({id:id,name:'Новый раздел',group:'kitchen',note:'',on:true,items:[]});mOpen=id;touch();return vMenu();}
+  if(t.id==='upl'){$('#files').value='';$('#files').click();return;}
+  if(t.dataset.mv){var a=t.dataset.mv.split('|'),i=+a[0],j=i+(+a[1]);if(j<0||j>=D.gallery.length)return;var x=D.gallery[i];D.gallery[i]=D.gallery[j];D.gallery[j]=x;touch();return vWorks();}
+  if(t.dataset.hero){D.hero.img=D.gallery[+t.dataset.hero].img;touch();toast('Фото поставлено на первый экран');return vWorks();}
+  if(t.dataset.wdel){if(!confirm('Удалить фото с сайта?'))return;var w=D.gallery.splice(+t.dataset.wdel,1)[0];touch();if(String(D.hero.img)!==String(w.img)&&/^\d+$/.test(String(w.img)))Store.removeImg(w.img).catch(function(){});return vWorks();}
+  if(t.id==='savePass'){var p1=$('#p1').value.trim(),p2=$('#p2').value.trim();if(p1.length<6)return toast('Минимум 6 символов');if(p1!==p2)return toast('Пароли не совпадают');if(/[а-яё]/i.test(p1))return toast('Только английские буквы и цифры');
+    return Store.changePassword(p1).then(function(){toast('Пароль изменён, войдите заново');setTimeout(function(){Store.logout();location.reload();},1500);}).catch(function(err){toast('Не вышло: '+err.message);});}
+  if(t.id==='reset'){if(!confirm('Заменить меню, тексты и фото версией из файла?'))return;return Store.reset().then(function(d){D=d;toast('Готово');render();}).catch(function(err){toast('Не вышло: '+err.message);});}
+  if(t.id==='exit2'){Store.logout();location.reload();}
+});
+})();
+</script>
+</body>
+</html>
