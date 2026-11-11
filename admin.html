@@ -63,6 +63,15 @@ h3.c{font-size:16px;margin-bottom:10px}
 .st{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
 .st button{height:32px;padding:0 10px;border-radius:9px;background:var(--s2);font-size:12.5px}
 .st button[aria-pressed=true]{background:var(--text);color:#16181d;font-weight:700}
+.st .del{margin-left:auto;background:rgba(255,90,90,.12);color:#ff8f8f;border:1px solid rgba(255,90,90,.35)}
+.bell{background:rgba(255,217,138,.1);border:1px solid rgba(255,217,138,.45);border-radius:12px;padding:10px 12px;margin-bottom:12px;display:flex;gap:10px;align-items:center;font-size:13.5px}
+.bell span{flex:1}
+.rep{background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:14px}
+.rep .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.rep input[type=date]{height:38px;padding:0 10px;border-radius:10px;background:var(--s2);border:1px solid var(--line);color:inherit;font:inherit}
+.rep .sum{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.rep .sum div{background:var(--s2);border-radius:10px;padding:8px 10px;font-size:12px;color:var(--muted)}
+.rep .sum b{display:block;font-size:17px;color:var(--text)}
 .it{display:grid;gap:8px;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:8px}
 .it .row input{flex:1}
 .sw{display:flex;align-items:center;gap:10px;margin-bottom:10px;cursor:pointer;font-size:14.5px}
@@ -94,7 +103,7 @@ h3.c{font-size:16px;margin-bottom:10px}
 
 <div id="app" hidden>
   <header class="bar">
-    <div class="wrap bar-in"><b>Админка</b><span class="sv" id="sv"></span><a class="btn s" href="index.html" target="_blank" rel="noopener">Сайт ↗</a><button class="btn s" id="exit">Выйти</button></div>
+    <div class="wrap bar-in"><b>Админка</b><span class="sv" id="sv"></span><button class="btn s" id="bellBtn" title="Уведомления в Telegram">🔔</button><a class="btn s" href="index.html" target="_blank" rel="noopener">Сайт ↗</a><button class="btn s" id="exit">Выйти</button></div>
     <nav class="tabs" id="tabs">
       <button data-tab="orders" aria-selected="true">Заказы и брони<span class="dot" id="dot" hidden></span></button>
       <button data-tab="menu" aria-selected="false">Меню</button>
@@ -162,15 +171,20 @@ var oKind='all';
 function money(n){return String(Math.round(n||0)).replace(/\B(?=(\d{3})+(?!\d))/g,' ')+' ₸';}
 function vOrders(){
   $('#view').innerHTML='<h2 class="t">Заказы и брони</h2><div class="note">Заказы из меню и брони столов с сайта приходят сюда со звуком. Если гость выбрал WhatsApp — он ещё и пишет вам в чат.</div>'+
+    '<div id="bellNote"></div>'+
+    '<div class="rep"><b>📊 Отчёт за день</b><div class="row" style="margin-top:8px"><input type="date" id="rDate" value="'+dayKey(new Date())+'"><button class="btn g s" type="button" id="rXls" style="height:38px">⬇ Скачать Excel</button></div><div class="sum" id="rSum"></div></div>'+
     '<div class="chips" id="oKd"></div><div class="chips" id="oSt"></div><div id="olist" class="empty">Загружаю…</div>';
   loadOrders(); timer=setInterval(function(){loadOrders(true);},20000);
+  Store.tgInfo().then(function(r){var el=$('#bellNote');if(el&&r.bot&&!r.chats)el.innerHTML='<div class="bell">🔔<span>Уведомления о заказах в Telegram ещё не подключены.</span><button class="btn s" type="button" data-bell="1">Подключить</button></div>';}).catch(function(){});
+  $('#rDate').onchange=paintReport; $('#rXls').onclick=downloadXls;
 }
 function loadOrders(quiet){
   Store.listOrders(300).then(function(l){
+    l=l.filter(function(o){return o.status!=='deleted';});
     var fresh=l.filter(function(o){return o.status==='new'&&seen.indexOf(o.id)<0;});
     if(quiet&&fresh.length){toast(fresh.some(function(o){return o.kind==='order';})?'Новый заказ!':'Новая бронь!');try{var c=new (window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator();o.frequency.value=880;o.connect(c.destination);o.start();o.stop(c.currentTime+.25);}catch(e){}}
     orders=l; seen=l.map(function(o){return o.id;}); localStorage.setItem('sezim_seen',JSON.stringify(seen));
-    paintOrders();
+    paintOrders(); paintReport();
   }).catch(function(e){$('#olist').textContent='Не загрузилось: '+e.message;});
 }
 function paintOrders(){
@@ -183,6 +197,38 @@ function paintOrders(){
   $('#olist').innerHTML=l.length?l.map(orderHTML).join(''):'Пока пусто.';
 }
 function dnice(v){if(!v)return '';var p=String(v).split('-');var m=['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'];return (+p[2])+' '+m[+p[1]-1];}
+/* ===== ОТЧЁТ ===== */
+function dayKey(d){var x=new Date(d);return x.getFullYear()+'-'+('0'+(x.getMonth()+1)).slice(-2)+'-'+('0'+x.getDate()).slice(-2);}
+var STALL={new:'Новый',ok:'Принят',done:'Выдан / пришли',cancel:'Отмена'};
+function dayData(day,list){
+  var ord=list.filter(function(o){return o.kind==='order'&&dayKey(o.created_at)===day;});
+  var bk=list.filter(function(o){return o.kind!=='order'&&(o.date===day||(!o.date&&dayKey(o.created_at)===day));});
+  var live=ord.filter(function(o){return o.status!=='cancel';});
+  var sum=live.reduce(function(a,o){return a+(+o.total||0);},0);
+  var dish={};live.forEach(function(o){(o.items||[]).forEach(function(x){var k=x.name;dish[k]=dish[k]||{q:0,s:0};dish[k].q+=+x.qty||0;dish[k].s+=(+x.qty||0)*(+x.price||0);});});
+  return {ord:ord,bk:bk,live:live,sum:sum,dish:dish};
+}
+function paintReport(){
+  var el=$('#rSum'); if(!el)return; var R=dayData($('#rDate').value,orders);
+  el.innerHTML='<div>Заказов<b>'+R.live.length+'</b></div><div>Сумма<b>'+money(R.sum)+'</b></div><div>Броней<b>'+R.bk.filter(function(o){return o.status!=='cancel';}).length+'</b></div>';
+}
+function loadXlsx(){return window.XLSX?Promise.resolve():new Promise(function(ok,no){var sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';sc.onload=ok;sc.onerror=function(){no(new Error('нет интернета'));};document.head.appendChild(sc);});}
+function downloadXls(){
+  var day=$('#rDate').value,b=$('#rXls'); b.disabled=true; b.textContent='Готовлю…';
+  Promise.all([loadXlsx(),Store.listOrders(1000)]).then(function(r){
+    var all=r[1].filter(function(o){return o.status!=='deleted';}),R=dayData(day,all),wb=XLSX.utils.book_new(),tm=function(o){return new Date(o.created_at).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});};
+    var s1=[['Отчёт за '+day+' — '+(D.settings.name||'Sezim')],[],['Заказов (без отмен)',R.live.length],['Сумма заказов, ₸',R.sum],['Отменено заказов',R.ord.length-R.live.length],['Броней',R.bk.filter(function(o){return o.status!=='cancel';}).length],[],
+      ['№','Время','Откуда','Где','Имя','Телефон','Состав','Сумма, ₸','Статус','Стол / время','Комментарий']];
+    R.ord.slice().reverse().forEach(function(o){s1.push([o.id,tm(o),o.via==='whatsapp'?'WhatsApp':'Сайт',o.type==='take'?'С собой':'В зале',o.name||'',o.phone||'',(o.items||[]).map(function(x){return x.name+' × '+x.qty;}).join(', '),+o.total||0,STALL[o.status]||o.status,o.when||'',o.comment||'']);});
+    var ws1=XLSX.utils.aoa_to_sheet(s1); ws1['!cols']=[{wch:6},{wch:7},{wch:10},{wch:9},{wch:16},{wch:17},{wch:50},{wch:11},{wch:14},{wch:14},{wch:24}];
+    XLSX.utils.book_append_sheet(wb,ws1,'Заказы');
+    var s2=[['Блюдо','Количество','Сумма, ₸']]; Object.keys(R.dish).sort(function(a,c){return R.dish[c].q-R.dish[a].q;}).forEach(function(k){s2.push([k,R.dish[k].q,R.dish[k].s]);}); s2.push([],['Итого','',R.sum]);
+    var ws2=XLSX.utils.aoa_to_sheet(s2); ws2['!cols']=[{wch:32},{wch:11},{wch:12}]; XLSX.utils.book_append_sheet(wb,ws2,'Блюда');
+    var s3=[['№','Дата','Время','Имя','Телефон','Гостей','С детьми','Статус','Пожелания']]; R.bk.forEach(function(o){s3.push([o.id,o.date||'',o.time||'',o.name||'',o.phone||'',+o.guests||'',o.kids?'да':'',({new:'Новая',ok:'Подтверждена',done:'Пришли',cancel:'Отмена'})[o.status]||o.status,o.comment||'']);});
+    var ws3=XLSX.utils.aoa_to_sheet(s3); ws3['!cols']=[{wch:6},{wch:11},{wch:7},{wch:16},{wch:17},{wch:8},{wch:9},{wch:13},{wch:30}]; XLSX.utils.book_append_sheet(wb,ws3,'Брони');
+    XLSX.writeFile(wb,'Sezim-отчёт-'+day+'.xlsx'); toast('Файл скачан');
+  }).catch(function(e){toast('Не получилось: '+e.message);}).then(function(){b.disabled=false;b.textContent='⬇ Скачать Excel';});
+}
 function orderHTML(o){
   var d=new Date(o.created_at), ph=String(o.phone||'').replace(/\D/g,'');
   if(o.kind==='order'){
@@ -191,12 +237,12 @@ function orderHTML(o){
       '<ul>'+it.map(function(x){return '<li>'+esc(x.name)+' <b>× '+esc(x.qty)+'</b> — '+money((+x.price||0)*(+x.qty||0))+'</li>';}).join('')+
       '<li><span>Итого:</span> <b>'+money(o.total)+'</b></li><li><span>Телефон:</span> '+esc(o.phone||'—')+'</li>'+(o.when?'<li><span>'+(o.type==='take'?'Забрать':'Стол / время')+':</span> '+esc(o.when)+'</li>':'')+(o.comment?'<li><span>Комментарий:</span> '+esc(o.comment)+'</li>':'')+'</ul>'+
       '<div class="row">'+(ph?'<a class="btn s" href="tel:+'+ph+'">📞 Позвонить</a><a class="btn s g" href="https://wa.me/'+ph+'" target="_blank" rel="noopener">WhatsApp</a>':'')+'</div>'+
-      '<div class="st">'+STO.map(function(s){return '<button data-ord="'+o.id+'" data-s="'+s[0]+'" aria-pressed="'+(o.status===s[0])+'">'+s[1]+'</button>';}).join('')+'</div></div>';
+      '<div class="st">'+STO.map(function(s){return '<button data-ord="'+o.id+'" data-s="'+s[0]+'" aria-pressed="'+(o.status===s[0])+'">'+s[1]+'</button>';}).join('')+'<button class="del" data-del="'+o.id+'">🗑 Удалить</button></div></div>';
   }
   return '<div class="ord'+(o.status==='new'?' new':'')+'"><div class="oh"><span class="bdg calc">'+esc(dnice(o.date))+(o.time?' · '+esc(o.time):'')+'</span><b>'+esc(o.name||'Без имени')+'</b><time>создана '+d.toLocaleDateString('ru-RU',{day:'numeric',month:'short'})+', '+d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})+'</time></div>'+
     '<ul><li><span>Телефон:</span> '+esc(o.phone||'—')+'</li><li><span>Гостей:</span> <b>'+esc(o.guests||'—')+'</b>'+(o.kids?' · 🧸 с детьми, ближе к игровой':'')+'</li>'+(o.comment?'<li><span>Пожелания:</span> '+esc(o.comment)+'</li>':'')+'</ul>'+
     '<div class="row">'+(ph?'<a class="btn s" href="tel:+'+ph+'">📞 Позвонить</a><a class="btn s g" href="https://wa.me/'+ph+'" target="_blank" rel="noopener">WhatsApp</a>':'')+'</div>'+
-    '<div class="st">'+STS.map(function(s){return '<button data-ord="'+o.id+'" data-s="'+s[0]+'" aria-pressed="'+(o.status===s[0])+'">'+s[1]+'</button>';}).join('')+'</div></div>';
+    '<div class="st">'+STS.map(function(s){return '<button data-ord="'+o.id+'" data-s="'+s[0]+'" aria-pressed="'+(o.status===s[0])+'">'+s[1]+'</button>';}).join('')+'<button class="del" data-del="'+o.id+'">🗑 Удалить</button></div></div>';
 }
 
 /* ===== МЕНЮ ===== */
@@ -312,6 +358,8 @@ document.addEventListener('click',function(e){
   var t=e.target.closest('button'); if(!t)return;
   if(t.dataset.ost){oSt=t.dataset.ost;return paintOrders();}
   if(t.dataset.okd){oKind=t.dataset.okd;oSt='all';return paintOrders();}
+  if(t.dataset.del){var did=t.dataset.del;if(!confirm('Удалить эту заявку? Её не будет в списке и в отчёте.'))return;Store.setStatus(did,'deleted').then(function(){orders=orders.filter(function(o){return String(o.id)!==did;});paintOrders();paintReport();toast('Удалено');}).catch(function(err){toast('Не вышло: '+err.message);});return;}
+  if(t.dataset.bell||t.id==='bellBtn'){go('settings');setTimeout(function(){var c=$('#tgCard');if(c){c.scrollIntoView({behavior:'smooth',block:'center'});c.style.outline='2px solid #ffd98a';setTimeout(function(){c.style.outline='';},2500);}},300);return;}
   if(t.dataset.ord){var id=t.dataset.ord,s=t.dataset.s;Store.setStatus(id,s).then(function(){orders.forEach(function(o){if(String(o.id)===id)o.status=s;});paintOrders();}).catch(function(err){toast('Не вышло: '+err.message);});return;}
   if(t.dataset.mopen){mOpen=mOpen===t.dataset.mopen?'':t.dataset.mopen;return vMenu();}
   if(t.dataset.cmv){var q=t.dataset.cmv.split('|'),i1=+q[0],j1=i1+(+q[1]);if(j1<0||j1>=D.menu.length)return;var y=D.menu[i1];D.menu[i1]=D.menu[j1];D.menu[j1]=y;touch();return vMenu();}
