@@ -97,6 +97,9 @@ window.Store = (function () {
 
   function createOrder(o) { return req('/order', { method: 'POST', body: o }).then(function () { return true; }).catch(function () { return false; }); }
   function listOrders(limit) { return req('/orders?limit=' + (limit || 300), { auth: true }); }
+  function tgInfo() { return req('/tg', { auth: true }); }
+  function tgLink() { return req('/tg/link', { method: 'POST', auth: true, body: {} }); }
+  function tgOff() { return req('/tg', { method: 'DELETE', auth: true }); }
   function setStatus(id, status) { return req('/order?id=' + encodeURIComponent(id), { method: 'PATCH', auth: true, body: { status: status } }); }
 
   function upload(blob) { return req('/img', { method: 'POST', auth: true, type: blob.type || 'image/jpeg', body: blob }).then(function (r) { return r.id; }); }
@@ -112,7 +115,7 @@ window.Store = (function () {
 
   return {
     load: load, save: save, reset: reset, fromFile: fromFile, normalize: normalize, img: img,
-    createOrder: createOrder, listOrders: listOrders, setStatus: setStatus,
+    createOrder: createOrder, listOrders: listOrders, setStatus: setStatus, tgInfo: tgInfo, tgLink: tgLink, tgOff: tgOff,
     upload: upload, removeImg: removeImg,
     login: login, logout: logout, authed: authed, changePassword: changePassword, api: API
   };

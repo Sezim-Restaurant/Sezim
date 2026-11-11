@@ -110,7 +110,7 @@ h3.c{font-size:16px;margin-bottom:10px}
 <input type="file" id="files" accept="image/*" multiple hidden>
 <div class="toast" id="toast" role="status"></div>
 
-<script src="js/store.js?v=2"></script>
+<script src="js/store.js?v=3"></script>
 <script>
 (function(){
 'use strict';
@@ -272,7 +272,22 @@ function vSettings(){
       F('Объявление — полоса наверху сайта','settings.announce',{ph:'Сегодня живая музыка с 19:00!',hint:'Пустое поле — полоса не показывается.'})+F('Строка про обслуживание в меню','settings.service')+'</div>'+
     '<div class="card"><h3 class="c">Часы работы</h3>'+F('Как писать на сайте','settings.hours')+'<div class="row">'+F('Открытие (ЧЧ:ММ)','settings.open')+F('Закрытие (ЧЧ:ММ)','settings.close')+'</div><p class="muted">По этим часам сайт показывает «Открыто / Закрыто» и время для брони.</p></div>'+
     '<div class="card"><h3 class="c">Связь</h3>'+F('Номер WhatsApp для брони (только цифры)','settings.wa',{ph:'77476965872'})+F('Телефон, как показывать','settings.phone')+F('Instagram','settings.instagram')+F('2ГИС','settings.gis')+
-      '<div class="row">'+F('Рейтинг','settings.rating')+F('Оценок','settings.ratingCount')+'</div></div>';
+      '<div class="row">'+F('Рейтинг','settings.rating')+F('Оценок','settings.ratingCount')+'</div></div>'+
+    '<div class="card" id="tgCard"><h3 class="c">🔔 Уведомления в Telegram</h3><p class="muted" id="tgSt">Проверяю…</p></div>';
+  paintTg();
+}
+function paintTg(){
+  Store.tgInfo().then(function(r){
+    var el=$('#tgCard'); if(!el)return;
+    if(!r.bot){$('#tgSt').textContent='Бот уведомлений ещё не настроен. Напишите разработчику сайта.';return;}
+    el.innerHTML='<h3 class="c">🔔 Уведомления в Telegram</h3>'+
+      '<p class="muted">Когда гость оформляет заказ на сайте, вам в Telegram сразу приходит сообщение с блюдами, суммой и телефоном. Прямо там можно нажать «Принят» или «Отмена».</p>'+
+      '<p style="margin:10px 0"><b>'+(r.chats?'✅ Подключено: '+r.chats+' '+(r.chats===1?'чат':'чата'):'Пока не подключено')+'</b></p>'+
+      '<div class="row"><button class="btn g" type="button" id="tgOn">'+(r.chats?'Подключить ещё телефон':'Подключить Telegram')+'</button>'+(r.chats?'<button class="btn s" type="button" id="tgOff">Отключить все</button>':'')+'</div>'+
+      '<p class="muted" style="margin-top:8px">Нажмите кнопку на телефоне, где установлен Telegram, — откроется бот @'+esc(r.bot)+'. Нажмите «Старт» (Start), и всё. Ссылка действует 15 минут.</p>';
+    $('#tgOn').onclick=function(){var w=window.open('about:blank','_blank');Store.tgLink().then(function(x){if(w)w.location.href=x.url;else location.href=x.url;toast('После «Старт» в боте вернитесь сюда');setTimeout(paintTg,15000);}).catch(function(e){if(w)w.close();toast('Ошибка: '+e.message);});};
+    if($('#tgOff'))$('#tgOff').onclick=function(){if(!confirm('Отключить уведомления во всех чатах?'))return;Store.tgOff().then(paintTg);};
+  }).catch(function(e){var x=$('#tgSt');if(x)x.textContent='Не загрузилось: '+e.message;});
 }
 
 /* ===== АДМИНКА ===== */
