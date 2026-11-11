@@ -96,7 +96,7 @@ h3.c{font-size:16px;margin-bottom:10px}
   <header class="bar">
     <div class="wrap bar-in"><b>Админка</b><span class="sv" id="sv"></span><a class="btn s" href="index.html" target="_blank" rel="noopener">Сайт ↗</a><button class="btn s" id="exit">Выйти</button></div>
     <nav class="tabs" id="tabs">
-      <button data-tab="orders" aria-selected="true">Брони<span class="dot" id="dot" hidden></span></button>
+      <button data-tab="orders" aria-selected="true">Заказы и брони<span class="dot" id="dot" hidden></span></button>
       <button data-tab="menu" aria-selected="false">Меню</button>
       <button data-tab="works" aria-selected="false">Фото</button>
       <button data-tab="texts" aria-selected="false">Тексты</button>
@@ -110,7 +110,7 @@ h3.c{font-size:16px;margin-bottom:10px}
 <input type="file" id="files" accept="image/*" multiple hidden>
 <div class="toast" id="toast" role="status"></div>
 
-<script src="js/store.js?v=1"></script>
+<script src="js/store.js?v=2"></script>
 <script>
 (function(){
 'use strict';
@@ -156,29 +156,43 @@ function SW(label,path){return '<label class="sw"><input type="checkbox" data-b=
 
 /* ===== БРОНИ ===== */
 var STS=[['new','Новая'],['ok','Подтверждена'],['done','Пришли'],['cancel','Отмена']];
+var STO=[['new','Новый'],['ok','Принят'],['done','Выдан'],['cancel','Отмена']];
+var STF=[['new','Новые'],['ok','В работе'],['done','Готово'],['cancel','Отмена']];
+var oKind='all';
+function money(n){return String(Math.round(n||0)).replace(/\B(?=(\d{3})+(?!\d))/g,' ')+' ₸';}
 function vOrders(){
-  $('#view').innerHTML='<h2 class="t">Брони</h2><div class="note">Заявки на бронь с сайта приходят сюда (со звуком) и одновременно гость пишет вам в WhatsApp.</div>'+
-    '<div class="chips" id="oSt"></div><div id="olist" class="empty">Загружаю…</div>';
+  $('#view').innerHTML='<h2 class="t">Заказы и брони</h2><div class="note">Заказы из меню и брони столов с сайта приходят сюда со звуком. Если гость выбрал WhatsApp — он ещё и пишет вам в чат.</div>'+
+    '<div class="chips" id="oKd"></div><div class="chips" id="oSt"></div><div id="olist" class="empty">Загружаю…</div>';
   loadOrders(); timer=setInterval(function(){loadOrders(true);},20000);
 }
 function loadOrders(quiet){
   Store.listOrders(300).then(function(l){
     var fresh=l.filter(function(o){return o.status==='new'&&seen.indexOf(o.id)<0;});
-    if(quiet&&fresh.length){toast('Новая бронь!');try{var c=new (window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator();o.frequency.value=880;o.connect(c.destination);o.start();o.stop(c.currentTime+.25);}catch(e){}}
+    if(quiet&&fresh.length){toast(fresh.some(function(o){return o.kind==='order';})?'Новый заказ!':'Новая бронь!');try{var c=new (window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator();o.frequency.value=880;o.connect(c.destination);o.start();o.stop(c.currentTime+.25);}catch(e){}}
     orders=l; seen=l.map(function(o){return o.id;}); localStorage.setItem('sezim_seen',JSON.stringify(seen));
     paintOrders();
   }).catch(function(e){$('#olist').textContent='Не загрузилось: '+e.message;});
 }
 function paintOrders(){
   var n=orders.filter(function(o){return o.status==='new';}).length; $('#dot').hidden=!n; $('#dot').textContent=n;
-  $('#oSt').innerHTML=[['all','Все']].concat(STS).map(function(s){var c=s[0]==='all'?orders.length:orders.filter(function(o){return o.status===s[0];}).length;return '<button data-ost="'+s[0]+'" aria-pressed="'+(oSt===s[0])+'">'+s[1]+' '+c+'</button>';}).join('');
-  var l=orders.filter(function(o){return oSt==='all'||o.status===oSt;});
+  var kd=orders.filter(function(o){return oKind==='all'||(o.kind==='order'?'order':'booking')===oKind;});
+  $('#oKd').innerHTML=[['all','Все'],['order','🛒 Заказы'],['booking','📅 Брони']].map(function(s){var c=s[0]==='all'?orders.length:orders.filter(function(o){return (o.kind==='order'?'order':'booking')===s[0];}).length;return '<button data-okd="'+s[0]+'" aria-pressed="'+(oKind===s[0])+'">'+s[1]+' '+c+'</button>';}).join('');
+  $('#oSt').innerHTML=[['all','Любой статус']].concat(STF).map(function(s){var c=s[0]==='all'?kd.length:kd.filter(function(o){return o.status===s[0];}).length;return '<button data-ost="'+s[0]+'" aria-pressed="'+(oSt===s[0])+'">'+s[1]+' '+c+'</button>';}).join('');
+  var l=kd.filter(function(o){return oSt==='all'||o.status===oSt;});
   $('#olist').className=l.length?'':'empty';
-  $('#olist').innerHTML=l.length?l.map(orderHTML).join(''):'Броней пока нет.';
+  $('#olist').innerHTML=l.length?l.map(orderHTML).join(''):'Пока пусто.';
 }
 function dnice(v){if(!v)return '';var p=String(v).split('-');var m=['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'];return (+p[2])+' '+m[+p[1]-1];}
 function orderHTML(o){
   var d=new Date(o.created_at), ph=String(o.phone||'').replace(/\D/g,'');
+  if(o.kind==='order'){
+    var it=Array.isArray(o.items)?o.items:[];
+    return '<div class="ord'+(o.status==='new'?' new':'')+'"><div class="oh"><span class="bdg calc">🛒 '+(o.type==='take'?'С собой':'В зале')+'</span><b>'+esc(o.name||'Без имени')+'</b><time>'+d.toLocaleDateString('ru-RU',{day:'numeric',month:'short'})+', '+d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})+' · '+(o.via==='whatsapp'?'через WhatsApp':'с сайта')+'</time></div>'+
+      '<ul>'+it.map(function(x){return '<li>'+esc(x.name)+' <b>× '+esc(x.qty)+'</b> — '+money((+x.price||0)*(+x.qty||0))+'</li>';}).join('')+
+      '<li><span>Итого:</span> <b>'+money(o.total)+'</b></li><li><span>Телефон:</span> '+esc(o.phone||'—')+'</li>'+(o.when?'<li><span>'+(o.type==='take'?'Забрать':'Стол / время')+':</span> '+esc(o.when)+'</li>':'')+(o.comment?'<li><span>Комментарий:</span> '+esc(o.comment)+'</li>':'')+'</ul>'+
+      '<div class="row">'+(ph?'<a class="btn s" href="tel:+'+ph+'">📞 Позвонить</a><a class="btn s g" href="https://wa.me/'+ph+'" target="_blank" rel="noopener">WhatsApp</a>':'')+'</div>'+
+      '<div class="st">'+STO.map(function(s){return '<button data-ord="'+o.id+'" data-s="'+s[0]+'" aria-pressed="'+(o.status===s[0])+'">'+s[1]+'</button>';}).join('')+'</div></div>';
+  }
   return '<div class="ord'+(o.status==='new'?' new':'')+'"><div class="oh"><span class="bdg calc">'+esc(dnice(o.date))+(o.time?' · '+esc(o.time):'')+'</span><b>'+esc(o.name||'Без имени')+'</b><time>создана '+d.toLocaleDateString('ru-RU',{day:'numeric',month:'short'})+', '+d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})+'</time></div>'+
     '<ul><li><span>Телефон:</span> '+esc(o.phone||'—')+'</li><li><span>Гостей:</span> <b>'+esc(o.guests||'—')+'</b>'+(o.kids?' · 🧸 с детьми, ближе к игровой':'')+'</li>'+(o.comment?'<li><span>Пожелания:</span> '+esc(o.comment)+'</li>':'')+'</ul>'+
     '<div class="row">'+(ph?'<a class="btn s" href="tel:+'+ph+'">📞 Позвонить</a><a class="btn s g" href="https://wa.me/'+ph+'" target="_blank" rel="noopener">WhatsApp</a>':'')+'</div>'+
@@ -241,7 +255,8 @@ function vTexts(){
     '<div class="card"><h3 class="c">Детская игровая</h3>'+F('Заголовок','kids.title')+F('Текст','kids.text',{area:1,rows:3})+
       '<label class="fld">Правила — каждое с новой строки<textarea data-lines="kids.rules" rows="5">'+esc(D.kids.rules.join('\n'))+'</textarea></label></div>'+
     '<div class="card"><h3 class="c">Отзывы</h3><label class="fld">Каждый с новой строки: имя | дата | текст<textarea data-blocks="reviews" data-keys="name,date,text" rows="8">'+esc(blocks(D.reviews,['name','date','text']))+'</textarea></label></div>'+
-    '<div class="card"><h3 class="c">Бронь</h3>'+SW('Показывать форму брони на сайте','booking.on')+F('Подпись под заголовком','booking.note')+'</div>';
+    '<div class="card"><h3 class="c">Бронь</h3>'+SW('Показывать форму брони на сайте','booking.on')+F('Подпись под заголовком','booking.note')+'</div>'+
+    '<div class="card"><h3 class="c">Заказ из меню</h3>'+SW('Кнопка «+» у блюд и корзина на сайте','ordering.on')+F('Подсказка в корзине','ordering.note',{ph:'На сайте — заказ сразу уходит администратору…',hint:'Пустое поле — стандартный текст.'})+'</div>';
 }
 
 /* ===== О НАС ===== */
@@ -281,6 +296,7 @@ document.addEventListener('change',function(e){var el=e.target;if(el.type==='che
 document.addEventListener('click',function(e){
   var t=e.target.closest('button'); if(!t)return;
   if(t.dataset.ost){oSt=t.dataset.ost;return paintOrders();}
+  if(t.dataset.okd){oKind=t.dataset.okd;oSt='all';return paintOrders();}
   if(t.dataset.ord){var id=t.dataset.ord,s=t.dataset.s;Store.setStatus(id,s).then(function(){orders.forEach(function(o){if(String(o.id)===id)o.status=s;});paintOrders();}).catch(function(err){toast('Не вышло: '+err.message);});return;}
   if(t.dataset.mopen){mOpen=mOpen===t.dataset.mopen?'':t.dataset.mopen;return vMenu();}
   if(t.dataset.cmv){var q=t.dataset.cmv.split('|'),i1=+q[0],j1=i1+(+q[1]);if(j1<0||j1>=D.menu.length)return;var y=D.menu[i1];D.menu[i1]=D.menu[j1];D.menu[j1]=y;touch();return vMenu();}

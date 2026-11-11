@@ -108,9 +108,39 @@ section.blk{padding-top:56px}
 .mi .r{display:flex;align-items:baseline;gap:8px}
 .mi .r span{flex:1;min-width:0}
 .mi .r i{flex:1;border-bottom:1px dotted #b9ae95;transform:translateY(-4px);min-width:16px}
-.mi .r span{flex:none;max-width:72%}
+.mi .r span{flex:0 1 auto;max-width:72%;min-width:0}
 .mi .r b{flex:none;font-weight:600;white-space:nowrap}
 .mi small{display:block;font-size:12.8px;color:var(--ink2);margin-top:2px}
+.mi .add{flex:none;align-self:center;width:32px;height:32px;margin-left:2px;border-radius:50%;background:var(--olive);color:#fff;font-size:21px;line-height:1;display:grid;place-items:center;box-shadow:0 2px 6px rgba(60,70,30,.25)}
+.mi .add:active{transform:scale(.92)}
+.qty{flex:none;align-self:center;display:flex;align-items:center;height:32px;margin-left:2px;border-radius:99px;background:var(--olive);color:#fff}
+.qty button{width:30px;height:32px;color:#fff;font-size:19px;line-height:1}
+.qty b{min-width:14px;text-align:center;font-size:14px;font-weight:700}
+.mi.in{background:linear-gradient(90deg,rgba(110,122,58,.07),rgba(110,122,58,0));margin:0 -8px;padding-left:8px;padding-right:8px;border-radius:10px}
+.cbar{position:fixed;left:12px;right:12px;bottom:calc(72px + env(safe-area-inset-bottom));z-index:26;max-width:520px;margin:0 auto;display:flex;align-items:center;gap:12px;min-height:58px;padding:8px 8px 8px 16px;border-radius:18px;background:var(--olive-d);color:#f4efe4;box-shadow:0 12px 30px rgba(30,34,20,.35);text-align:left;width:auto;animation:up .25s}
+.cbar .ci{position:relative;font-size:22px}
+.cbar .ci i{position:absolute;top:-6px;right:-10px;min-width:19px;height:19px;padding:0 5px;border-radius:99px;background:var(--gold);color:#fff;font:700 11.5px/19px "Golos Text",sans-serif;font-style:normal;text-align:center}
+.cbar .tt{flex:1;min-width:0;line-height:1.25}
+.cbar .tt small{display:block;font-size:12.5px;opacity:.75}
+.cbar .tt b{font-size:17px}
+.cbar .go{flex:none;height:42px;padding:0 16px;border-radius:13px;background:#f4efe4;color:var(--olive-d);font-weight:700;font-size:15px;display:grid;place-items:center}
+@media(min-width:900px){.cbar{bottom:22px}}
+body.hc{padding-bottom:calc(150px + env(safe-area-inset-bottom))}
+@media(min-width:900px){body.hc{padding-bottom:90px}}
+.cl{margin-top:12px;border-top:1px solid var(--line)}
+.cl>div{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px dashed var(--line)}
+.cl .nm{flex:1;min-width:0}
+.cl .nm small{display:block;color:var(--ink2);font-size:12.5px}
+.cl .qty{margin:0}
+.cl .sm{flex:none;min-width:70px;text-align:right;font-weight:600;white-space:nowrap}
+.tot{display:flex;justify-content:space-between;align-items:baseline;margin:12px 0 2px;font-size:18px}
+.tot b{font-size:22px;color:var(--olive-d)}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--paper2);border-radius:14px;padding:4px;margin-top:6px}
+.seg button{height:42px;border-radius:11px;font-size:15px;color:var(--ink2)}
+.seg button[aria-pressed=true]{background:var(--card);color:var(--ink);font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.warn{margin-top:10px;padding:10px 12px;border-radius:12px;background:#fbeee0;color:#8a4b12;font-size:13.5px}
+.ob{display:grid;gap:8px;margin-top:14px}
+.ob .btn{width:100%;height:52px}
 .svc{margin-top:14px;text-align:center;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
 
 /* детская */
@@ -292,6 +322,7 @@ section.blk{padding-top:56px}
 
 <footer class="foot"><div class="wrap"><div><b>Sezim</b><div id="fAddr"></div></div><div id="fHours"></div></div></footer>
 
+<button type="button" class="cbar" id="cbar" hidden aria-label="Открыть корзину"><span class="ci">🛒<i id="cN">0</i></span><span class="tt"><small>Ваш заказ</small><b id="cS">0 ₸</b></span><span class="go">Оформить</span></button>
 <div class="dock"><a class="btn dk" href="#booking">Бронь</a><a class="btn lt" href="#menu">Меню</a></div>
 
 <div class="sheet" id="sheet" hidden>
@@ -303,11 +334,11 @@ section.blk{padding-top:56px}
 </div>
 <div class="lb" id="lb" hidden><img id="lbImg" alt=""><button class="c" type="button" data-lb="x" aria-label="Закрыть">×</button><button class="p" type="button" data-lb="-1" aria-label="Предыдущее фото">‹</button><button class="n" type="button" data-lb="1" aria-label="Следующее фото">›</button></div>
 
-<script src="js/store.js?v=1"></script>
+<script src="js/store.js?v=2"></script>
 <script>
 (function(){
 'use strict';
-var D,ST,grp='kitchen',cat='',q='',guests=2,G=[],lbI=0;
+var D,ST,grp='kitchen',cat='',q='',guests=2,G=[],lbI=0,CART=[],otype='hall';
 var $=function(s){return document.querySelector(s);};
 var esc=function(t){return String(t==null?'':t).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});};
 var fmt=function(n){return String(Math.round(n||0)).replace(/\B(?=(\d{3})+(?!\d))/g,' ')+' ₸';};
@@ -320,7 +351,7 @@ Store.load().then(start).catch(function(){document.body.insertAdjacentHTML('afte
 
 function start(d){
   D=d; ST=d.settings;
-  paintTop(); paintFeats(); paintMenuShell(); paintMenu(); paintKids(); paintGallery(); paintReviews(); paintContacts(); paintBooking(); paintStatus(); setInterval(paintStatus,60000);
+  paintTop(); paintFeats(); paintMenuShell(); paintMenu(); paintKids(); paintGallery(); paintReviews(); paintContacts(); paintBooking(); loadCart(); paintCart(); paintStatus(); setInterval(paintStatus,60000);
 }
 function paintTop(){
   if(ST.announce){$('#announce').textContent=ST.announce;$('#announce').hidden=false;}
@@ -353,7 +384,8 @@ function paintMenu(){
   var h=cs.map(function(c){
     var it=c.items.filter(function(i){return i.on&&(!qq||(i.name+' '+(i.sub||'')).toLowerCase().indexOf(qq)>=0);}); if(!it.length)return '';
     return '<div class="mc" id="c-'+esc(c.id)+'"><h3>'+esc(c.name)+'</h3>'+(c.note?'<p class="nt">'+esc(c.note)+'</p>':'')+
-      it.map(function(i){return '<div class="mi"><div class="r"><span>'+esc(i.name)+'</span><i></i><b>'+(i.price?fmt(i.price):'')+'</b></div>'+(i.sub?'<small>'+esc(i.sub)+'</small>':'')+'</div>';}).join('')+'</div>';
+      it.map(function(i){var k=key(c,i),n=qtyOf(k),can=D.ordering.on&&i.price>0;
+        return '<div class="mi'+(n?' in':'')+'"><div class="r"><span>'+esc(i.name)+'</span><i></i><b>'+(i.price?fmt(i.price):'')+'</b>'+(can?(n?stepper(k,n):'<button type="button" class="add" data-add="'+esc(k)+'" aria-label="Добавить: '+esc(i.name)+'">+</button>'):'')+'</div>'+(i.sub?'<small>'+esc(i.sub)+'</small>':'')+'</div>';}).join('')+'</div>';
   }).join('');
   $('#mgrid').innerHTML=h||'<p class="sub">Ничего не нашлось. Попробуйте другое слово.</p>';
   $('#cats').hidden=!!qq;
@@ -407,6 +439,76 @@ function submit(f){
   showDone(url);
 }
 
+/* корзина */
+function key(c,i){return c.id+'::'+i.name;}
+function stepper(k,n){return '<span class="qty"><button type="button" data-dec="'+esc(k)+'" aria-label="Убрать одну">−</button><b>'+n+'</b><button type="button" data-inc="'+esc(k)+'" aria-label="Добавить ещё">+</button></span>';}
+function qtyOf(k){for(var j=0;j<CART.length;j++)if(CART[j].k===k)return CART[j].q;return 0;}
+function findItem(k){var p=k.split('::'),cid=p.shift(),nm=p.join('::');for(var a=0;a<D.menu.length;a++){var c=D.menu[a];if(c.id!==cid||!c.on)continue;for(var b=0;b<c.items.length;b++){var i=c.items[b];if(i.name===nm&&i.on&&i.price>0)return {c:c,i:i};}}return null;}
+function loadCart(){var raw=ls('sezim_cart')||[];CART=[];if(!D.ordering.on)return;raw.forEach(function(x){var f=findItem(x.k);if(f&&x.q>0)CART.push({k:x.k,q:Math.min(99,x.q),name:f.i.name,price:f.i.price,adult:!!f.c.adult});});}
+function saveCart(){ls('sezim_cart',CART.map(function(x){return {k:x.k,q:x.q};}));}
+function setQty(k,d){
+  var j=-1;for(var a=0;a<CART.length;a++)if(CART[a].k===k)j=a;
+  if(j<0){if(d<=0)return;var f=findItem(k);if(!f)return;CART.push({k:k,q:0,name:f.i.name,price:f.i.price,adult:!!f.c.adult});j=CART.length-1;}
+  CART[j].q=Math.max(0,Math.min(99,CART[j].q+d)); if(!CART[j].q)CART.splice(j,1);
+  saveCart(); paintMenu(); paintCart(); if(open&&$('#ck'))paintCheckout();
+}
+function cartSum(){return CART.reduce(function(s,x){return s+x.price*x.q;},0);}
+function cartCount(){return CART.reduce(function(s,x){return s+x.q;},0);}
+function paintCart(){var n=cartCount();$('#cbar').hidden=!n;document.body.classList.toggle('hc',!!n);$('#cN').textContent=n;$('#cS').textContent=fmt(cartSum());}
+function showCheckout(){body.innerHTML='<div id="ck"></div>';paintCheckout();openSheet();var dr=ls('sezim_client')||{},f=$('#ckf');if(f){if(dr.name)f.name.value=dr.name;if(dr.phone)f.phone.value=dr.phone;}}
+function paintCheckout(){
+  var box=$('#ck'); if(!box)return;
+  if(!CART.length){box.innerHTML='<h3 id="shT">Корзина пуста</h3><p class="sub" style="margin:8px 0 16px">Нажмите «+» рядом с блюдом в меню, чтобы добавить его в заказ.</p><a class="btn dk" style="width:100%" href="#menu" data-close>Открыть меню</a>';return;}
+  var keep=null,f=$('#ckf'); if(f)keep={name:f.name.value,phone:f.phone.value,when:f.when.value,note:f.note.value};
+  var adult=CART.some(function(x){return x.adult;});
+  box.innerHTML='<h3 id="shT">Ваш заказ</h3>'+
+    '<div class="cl">'+CART.map(function(x){return '<div><span class="nm">'+esc(x.name)+'<small>'+fmt(x.price)+(x.adult?' · 18+':'')+'</small></span>'+stepper(x.k,x.q)+'<span class="sm">'+fmt(x.price*x.q)+'</span></div>';}).join('')+'</div>'+
+    '<div class="tot"><span>Итого</span><b>'+fmt(cartSum())+'</b></div>'+
+    (otype==='hall'&&ST.service?'<p class="hint" style="margin-top:0">'+esc(ST.service)+'</p>':'')+
+    '<form class="f" id="ckf" novalidate style="margin-top:14px">'+
+      '<div class="fld">Где будете кушать?<div class="seg"><button type="button" data-ot="hall" aria-pressed="'+(otype==='hall')+'">🍽 В зале</button><button type="button" data-ot="take" aria-pressed="'+(otype==='take')+'">🥡 С собой</button></div></div>'+
+      (otype==='take'&&adult?'<p class="warn">Алкоголь (18+) продаём только гостям в зале. Уберите эти позиции или выберите «В зале».</p>':'')+
+      '<label class="fld" id="c-name">Имя<input name="name" autocomplete="given-name" maxlength="40" placeholder="Как к вам обращаться"><span class="err">Напишите имя</span></label>'+
+      '<label class="fld" id="c-phone">Телефон<input name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+7 7__ ___ __ __"><span class="err">Нужен номер из 11 цифр</span></label>'+
+      '<label class="fld">'+(otype==='hall'?'Номер стола или ко скольки придёте':'Ко скольки забрать')+'<input name="when" maxlength="40" placeholder="'+(otype==='hall'?'Например: стол 5 или к 19:30':'Например: к 14:00')+'"></label>'+
+      '<label class="fld">Комментарий<textarea name="note" rows="2" maxlength="300" placeholder="Например: без лука, приборы на троих"></textarea></label>'+
+      '<div class="ob"><button class="btn dk" type="button" data-send="site">Оформить на сайте</button><button class="btn wa" type="button" data-send="wa">Оформить в WhatsApp</button></div>'+
+      '<p class="hint">'+esc(D.ordering.note||'На сайте — заказ сразу уходит администратору, он перезвонит для подтверждения. В WhatsApp — откроется чат с готовым заказом.')+'</p>'+
+    '</form>';
+  f=$('#ckf'); if(keep){f.name.value=keep.name;f.phone.value=keep.phone;f.when.value=keep.when;f.note.value=keep.note;}
+}
+function sendOrder(via,btn){
+  var f=$('#ckf'),ok=true;
+  [['name',!f.name.value.trim()],['phone',digits(f.phone.value).length!==11]].forEach(function(x){var l=$('#c-'+x[0]);l.classList.toggle('bad',x[1]);if(x[1]&&ok){f[x[0]].focus();ok=false;}});
+  if(!ok)return;
+  if(otype==='take'&&CART.some(function(x){return x.adult;})){$('.warn').scrollIntoView({block:'center'});return;}
+  var o={kind:'order',via:via==='wa'?'whatsapp':'site',type:otype,name:f.name.value.trim(),phone:phonePretty(f.phone.value),when:f.when.value.trim(),comment:f.note.value.trim(),
+    items:CART.map(function(x){return {name:x.name,qty:x.q,price:x.price};}),total:cartSum()};
+  ls('sezim_client',{name:o.name,phone:o.phone});
+  if(via==='wa'){
+    var L=['Здравствуйте! Хочу сделать заказ в '+(ST.name||'Sezim')+' ('+(otype==='hall'?'в зале':'с собой')+').',''];
+    o.items.forEach(function(x){L.push('• '+x.name+' × '+x.qty+' — '+fmt(x.price*x.qty));});
+    L.push('','Итого: '+fmt(o.total),'','Имя: '+o.name,'Телефон: '+o.phone);
+    if(o.when)L.push((otype==='hall'?'Стол / время: ':'Забрать: ')+o.when);
+    if(o.comment)L.push('Комментарий: '+o.comment);
+    try{navigator.sendBeacon(Store.api+'/order?site=sezim',new Blob([JSON.stringify(o)],{type:'text/plain'}));}catch(e){Store.createOrder(o);}
+    var url=wa(L.join('\n')),w=window.open(url,'_blank'); if(!w)location.href=url;
+    clearCart(); showOrderDone(url); return;
+  }
+  btn.disabled=true; btn.textContent='Отправляю…';
+  Store.createOrder(o).then(function(r){
+    if(!r){btn.disabled=false;btn.textContent='Оформить на сайте';alert('Не получилось отправить. Проверьте интернет или оформите через WhatsApp.');return;}
+    clearCart(); showOrderDone('');
+  });
+}
+function clearCart(){CART=[];saveCart();paintCart();paintMenu();}
+function showOrderDone(url){
+  body.innerHTML='<div class="done"><div class="ok">✓</div><h3 id="shT" style="padding:0">'+(url?'Заказ готов к отправке':'Заказ принят!')+'</h3>'+
+    (url?'<p>Если WhatsApp не открылся сам — нажмите кнопку ниже и отправьте сообщение.</p><a class="btn wa" style="width:100%" href="'+esc(url)+'" target="_blank" rel="noopener">Открыть WhatsApp</a>'
+        :'<p>Администратор уже видит ваш заказ и перезвонит для подтверждения.</p><button class="btn dk" style="width:100%" type="button" data-close>Хорошо</button>')+'</div>';
+  if(!open)openSheet();
+}
+
 /* окно */
 var sheet=$('#sheet'),body=$('#sheetBody'),open=false;
 function openSheet(){if(!open){open=true;sheet.hidden=false;document.body.style.overflow='hidden';try{history.pushState({s:1},'');}catch(e){}}$('#box').focus({preventScroll:true});}
@@ -416,6 +518,7 @@ window.addEventListener('popstate',function(){hideSheet();hideLb();});
 function showSettings(){
   body.innerHTML='<h3 id="shT">Настройки</h3>'+
     '<a class="mn" href="#menu" data-close><span class="ic">📖</span><span><b>Меню</b><small>Кухня, национальные блюда и бар</small></span></a>'+
+    (D.ordering.on?'<button type="button" class="mn" id="cbar2"><span class="ic">🛒</span><span><b>Заказ</b><small>'+(cartCount()?cartCount()+' поз. · '+fmt(cartSum()):'Добавляйте блюда кнопкой «+» в меню')+'</small></span></button>':'')+
     '<a class="mn" href="#booking" data-close><span class="ic">📅</span><span><b>Бронь стола</b><small>Выбрать дату, время и гостей</small></span></a>'+
     '<a class="mn" href="#contacts" data-close><span class="ic">ℹ️</span><span><b>О нас</b><small>Адрес, часы работы, как добраться</small></span></a>'+
     '<a class="mn" href="'+esc(wa('Здравствуйте!'))+'" target="_blank" rel="noopener"><span class="ic">💬</span><span><b>Связаться</b><small>WhatsApp '+esc(ST.phone||'')+'</small></span></a>'+
@@ -435,6 +538,12 @@ lb.addEventListener('touchend',function(e){var dx=e.changedTouches[0].clientX-tx
 document.addEventListener('click',function(e){
   var t=e.target.closest('button,a,[data-close]'); if(!t)return;
   if(t.id==='setBtn')return showSettings();
+  if(t.id==='cbar'||t.id==='cbar2')return showCheckout();
+  if(t.dataset.add)return setQty(t.dataset.add,1);
+  if(t.dataset.inc)return setQty(t.dataset.inc,1);
+  if(t.dataset.dec)return setQty(t.dataset.dec,-1);
+  if(t.dataset.ot){otype=t.dataset.ot;paintCheckout();return;}
+  if(t.dataset.send)return sendOrder(t.dataset.send,t);
   if(t.hasAttribute('data-close')){var h=t.getAttribute('href');if(h&&h.charAt(0)==='#'){e.preventDefault();closeSheet();setTimeout(function(){var x=document.querySelector(h);if(x)x.scrollIntoView({behavior:'smooth'});},80);return;}closeSheet();return;}
   if(t.dataset.grp){grp=t.dataset.grp;q='';$('#srch').value='';paintMenuShell();paintMenu();return;}
   if(t.dataset.cat){var el=document.getElementById('c-'+t.dataset.cat);[].forEach.call($('#cats').children,function(b){b.setAttribute('aria-selected',b===t);});if(el)el.scrollIntoView({behavior:'smooth',block:'start'});t.scrollIntoView({block:'nearest',inline:'center'});return;}

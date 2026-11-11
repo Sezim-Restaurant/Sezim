@@ -64,7 +64,7 @@ window.Store = (function () {
     d.features = arr(d.features);
     d.kids = d.kids || {}; d.kids.rules = arr(d.kids.rules);
     d.menu = arr(d.menu).map(function (c) {
-      c.on = c.on !== false; c.group = c.group || 'kitchen';
+      c.on = c.on !== false; c.group = c.group || 'kitchen'; c.adult = !!c.adult || /18\+/.test(c.note || '');
       c.items = arr(c.items).map(function (i) { i.price = +i.price || 0; i.on = i.on !== false; return i; });
       return c;
     });
@@ -72,6 +72,7 @@ window.Store = (function () {
     d.reviews = arr(d.reviews);
     d.about = d.about || {};
     d.booking = d.booking || {}; d.booking.on = d.booking.on !== false;
+    d.ordering = d.ordering || {}; d.ordering.on = d.ordering.on !== false;
     d.rev = +d.rev || 1;
     return d;
   }
